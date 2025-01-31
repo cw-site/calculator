@@ -16,12 +16,18 @@
             border-radius: 10px;
             box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
             background: white;
-            transition: background 0.3s, color 0.3s;
         }
         
-        h2 { text-align: center; color: #333; }
+        h2 { 
+            text-align: center; 
+            color: #333;
+        }
         
-        label { font-weight: bold; margin-top: 10px; display: block; }
+        label { 
+            font-weight: bold; 
+            margin-top: 10px; 
+            display: block;
+        }
         
         select, input[type="number"] { 
             width: 100px; 
@@ -69,9 +75,19 @@
             margin-top: 10px;
         }
         
-        button:first-of-type { background: #007bff; color: white; }
-        button:last-of-type { background: #dc3545; color: white; }
-        button:hover { opacity: 0.8; }
+        button:first-of-type { 
+            background: #007bff; 
+            color: white; 
+        }
+        
+        button:last-of-type { 
+            background: #dc3545; 
+            color: white; 
+        }
+        
+        button:hover { 
+            opacity: 0.8; 
+        }
 
         .result { 
             text-align: center; 
@@ -82,55 +98,43 @@
         }
 
         /* Dark Mode */
-        body.dark-mode { 
-            background-color: #2d2d2d; 
-            color: #f1f1f1;
-            box-shadow: none;
-        }
+        @media (prefers-color-scheme: dark) {
+            body { 
+                background-color: #2d2d2d; /* Dark Grey */
+                color: #f1f1f1;
+                box-shadow: none;
+            }
 
-        body.dark-mode h2,
-        body.dark-mode .result { 
-            color: #f1f1f1; 
-        }
+            h2 {
+                color: #f1f1f1;
+            }
 
-        body.dark-mode select, 
-        body.dark-mode input[type="number"] { 
-            background: #3a3a3a;
-            color: #f1f1f1;
-            border: 1px solid #555;
-        }
+            select, input[type="number"] { 
+                background: #3a3a3a;
+                color: #f1f1f1;
+                border: 1px solid #555;
+            }
 
-        body.dark-mode .player-input, 
-        body.dark-mode .checkbox-group {
-            background: #444;
-        }
+            .player-input, .checkbox-group {
+                background: #444;
+            }
 
-        body.dark-mode button:first-of-type { background: #3498db; }
-        body.dark-mode button:last-of-type { background: #e74c3c; }
+            button:first-of-type { 
+                background: #3498db; 
+            }
 
-        /* Dark Mode Toggle Button */
-        .dark-mode-toggle {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #444;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            font-size: 14px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+            button:last-of-type { 
+                background: #e74c3c; 
+            }
 
-        body.dark-mode .dark-mode-toggle {
-            background: #f1f1f1;
-            color: #333;
+            .result {
+                color: #f1f1f1;
+            }
         }
+        
     </style>
 </head>
 <body>
-    <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙 Dark Mode</button>
-
     <h2>Raid Format Damage Calculator</h2>
 
     <div class="dropdown-container">
@@ -176,21 +180,6 @@
     <h3 class="result">To Lost Zone: <span id="finalResult">-</span> <span id="cardText"></span></h3>
 
     <script>
-        function toggleDarkMode() {
-            document.body.classList.toggle("dark-mode");
-            let isDark = document.body.classList.contains("dark-mode");
-            localStorage.setItem("darkMode", isDark);
-            document.querySelector(".dark-mode-toggle").textContent = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
-        }
-
-        function applyDarkModePreference() {
-            let darkModePreference = localStorage.getItem("darkMode");
-            if (darkModePreference === "true" || (darkModePreference === null && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-                document.body.classList.add("dark-mode");
-                document.querySelector(".dark-mode-toggle").textContent = "☀️ Light Mode";
-            }
-        }
-
         function updatePlayerInputs() {
             let numPlayers = document.getElementById("numPlayers").value;
             let container = document.getElementById("playerInputs");
@@ -207,7 +196,40 @@
             }
         }
 
-        applyDarkModePreference();
+        function calculateDamage() {
+            let numPlayers = document.getElementById("numPlayers").value;
+            let difficultyMultiplier = parseFloat(document.getElementById("difficulty").value);
+            let damageInputs = document.querySelectorAll(".damage");
+            let burn = document.getElementById("burnCheckbox").checked ? 20 : 0;
+            let poison = document.getElementById("poisonCheckbox").checked ? 10 : 0;
+            let healing = parseInt(document.getElementById("healing").value) || 0;
+
+            let totalDamage = 0;
+            damageInputs.forEach(input => {
+                totalDamage += parseInt(input.value) || 0;
+            });
+
+            totalDamage += burn + poison;
+            totalDamage -= healing;
+
+            let denominator = 10 * numPlayers * difficultyMultiplier;
+            let result = Math.max(0, Math.floor(totalDamage / denominator)); // Prevents negative values
+
+            let cardText = (result === 1) ? "card" : "cards";
+
+            document.getElementById("finalResult").innerText = result;
+            document.getElementById("cardText").innerText = cardText;
+        }
+
+        function clearInputs() {
+            document.querySelectorAll(".damage").forEach(input => input.value = "");
+            document.getElementById("burnCheckbox").checked = false;
+            document.getElementById("poisonCheckbox").checked = false;
+            document.getElementById("healing").value = "";
+            document.getElementById("finalResult").innerText = "-";
+            document.getElementById("cardText").innerText = "";
+        }
+
         updatePlayerInputs();
     </script>
 </body>
